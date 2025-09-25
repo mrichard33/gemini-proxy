@@ -9,12 +9,7 @@ app.use(cors());
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
 
-// NEW: A "Health Check" endpoint for Railway to ping.
-// This tells Railway the server is alive and prevents it from shutting down.
-app.get('/', (req, res) => {
-    res.status(200).send('Proxy is alive and healthy.');
-});
-
+// Main endpoint that receives the address and calls the AI
 app.post('/api/gemini-proxy', async (req, res) => {
     console.log('\n--- NEW REQUEST RECEIVED ---');
 
@@ -27,18 +22,8 @@ app.post('/api/gemini-proxy', async (req, res) => {
             return res.status(400).json({ error: 'Address is required' });
         }
 
-        // *** NEW, MORE SOPHISTICATED "APPRAISER-GRADE" PROMPT ***
-        const prompt = `Act as a senior real estate appraiser for a high-net-worth insurance underwriter. Your task is to provide a highly accurate, current Fair Market Value (FMV) for the property at the following address.
-
-Methodology:
-1.  **Property Lookup:** First, identify the core attributes of the subject property from public records (e.g., Zillow, Redfin, county records). Key attributes include: living area square footage, bed/bath count, and lot size.
-2.  **Comparable Sales:** Second, find the 3 most expensive and recent comparable sales (comps) of similar properties sold within the last 12 months in the immediate neighborhood.
-3.  **Market Adjustment:** Third, adjust the valuation based on current local market trends and the average price per square foot of your high-value comps. **Crucially, ignore low-quality data like Zestimates, Redfin Estimates, and outdated tax assessments.** Your final valuation must reflect the highest defensible market price.
-4.  **Final Estimate:** Synthesize all data into a single estimated value.
-
-Your response must be a single integer representing the fair market value in USD. Do not include any text, dollar signs, or commas.
-
-Address: ${address}`;
+        // The new, more sophisticated "Appraiser-Grade" prompt
+        const prompt = `Act as an expert real estate AVM (Automated Valuation Model). Your task is to provide a highly accurate, up-to-date fair market value for the property at the following address. Methodology: 1. Property Lookup: First, identify the core attributes of the subject property from public records (e.g., Zillow, Redfin, county records). Key attributes include: living area square footage, bed/bath count, and lot size. 2. Comparable Sales: Second, find at least 3 recent comparable sales (comps) of similar properties sold within the last 12 months in the immediate neighborhood. 3. Market Adjustment: Third, adjust the valuation based on current local market trends and price per square foot. Do not use outdated tax assessments or old sale prices as the final value. 4. Final Estimate: Synthesize all data into a single estimated value. Your response must be a single integer representing the fair market value in USD. Do not include any text, dollar signs, or commas. Address: ${address}`;
         
         console.log('[2/5] Sending sophisticated prompt to Google API.');
         
@@ -71,5 +56,5 @@ Address: ${address}`;
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Proxy server with axios and health check is listening on port ${PORT}`);
+    console.log(`Proxy server with axios is listening on port ${PORT}`);
 });
