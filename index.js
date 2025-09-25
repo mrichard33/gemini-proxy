@@ -21,7 +21,7 @@ app.post('/api/gemini-proxy', async (req, res) => {
             return res.status(400).json({ error: 'Address is required' });
         }
 
-        const prompt = `Based on the following address, what is the estimated property value in US dollars? Respond with ONLY the numerical value, with no commas, dollar signs, or other text. If you cannot determine a value, respond with 'null'.\n\nAddress: ${address}`;
+        const prompt = `Act as an expert real estate valuation analyst. Your task is to provide an automated valuation model (AVM) estimate for the property at the following address. Methodology: 1. Analyze publicly available data, including recent comparable sales in the neighborhood, local market trends, property tax records, and any past listing information for the property. 2. Synthesize this information to determine a fair market value. 3. Your final response must be a single integer representing the estimated value in USD, with no commas, dollar signs, or explanatory text. Address: ${address}`;
         
         console.log('[2/5] Sending prompt to Google API.');
         
